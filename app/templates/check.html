@@ -1,0 +1,59 @@
+{% extends "bootstrap/base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block navbar %}
+<div class="container">
+<ul class="nav nav-tabs">
+  <li role="presentation" class="active"><a href="#">Home</a></li>
+  <li role="presentation"><a href="#">Link</a></li>
+  <li role="presentation"><a href="#">Link</a></li>
+</ul>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>DMARC Check</h1>
+    <h2>DMARC Check</h2>
+
+    <form action="/" method="post">
+        {{ wtf.quick_form(form) }}
+    </form>
+
+    {% if results %}
+    <hr>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>domain</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+            <td>{{ results["domain"] }}</td>
+        </tr>
+      </tbody>
+    </table>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>tag</th>
+          <th>value</th>
+          <th>explicit</th>
+        </tr>
+      </thead>
+      <tbody>
+          {% for k, v in results["dmarc"]["tags"].items() %}
+            {% if v["explicit"] %}
+        <tr>
+            <td>{{ k }}</td>
+            <td>{{ v["value"] }}</td>
+            <td>{{ v["explicit"] }}</td>
+        </tr>
+          {% endif %}
+        {% endfor %}
+      </tbody>
+    </table>
+   {% endif %}
+</div>
+{% endblock %}
