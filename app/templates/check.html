@@ -14,8 +14,7 @@
 {% block content %}
 <div class="container">
     <h1>DMARC Check</h1>
-    <h2>DMARC Check</h2>
-
+    
     <form action="/" method="post">
         {{ wtf.quick_form(form) }}
     </form>
@@ -25,35 +24,72 @@
     <table class="table">
       <thead>
         <tr>
-          <th>domain</th>
+          <th>Record</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-            <td>{{ results["domain"] }}</td>
+            <td>{{ results["dmarc"]["record"] }}</td>
         </tr>
       </tbody>
     </table>
+    {% if results["dmarc"]["tags"] %}
     <table class="table">
-      <thead>
-        <tr>
-          <th>tag</th>
-          <th>value</th>
-          <th>explicit</th>
-        </tr>
-      </thead>
-      <tbody>
+        <caption>Discovered Tags <small>declared explicitly in DMARC record</small></caption>
+        <thead>
+            <tr>
+                <th>tag</th>
+                <th>value</th>
+                <th>description</th>
+            </tr>
+        </thead>
+        <tbody>
           {% for k, v in results["dmarc"]["tags"].items() %}
             {% if v["explicit"] %}
-        <tr>
-            <td>{{ k }}</td>
-            <td>{{ v["value"] }}</td>
-            <td>{{ v["explicit"] }}</td>
-        </tr>
-          {% endif %}
-        {% endfor %}
-      </tbody>
+              {% if k == 'rua' or k == 'ruf' %}
+                {% for uris in v["value"] %}
+                  {% for uri in uris.values() %}
+                  <tr>
+                      {%- if loop.index == 1 %}<td rowspan="3">{{ k }}</td>{% endif %}
+                      <td>{{ uri }}</td>
+                      {%- if loop.index == 1 %}<td rowspan="3">{{ v["description"] }}</td>{% endif %}
+                  </tr>
+                  {% endfor %}
+                {% endfor %}
+              {% else %}
+                  <tr>
+                      <td>{{ k }}</td>
+                      <td>{{ v["value"] }}</td>
+                      <td>{{ v["description"] }}</td>
+                  </tr>
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        </tbody>
     </table>
-   {% endif %}
+    <table class="table">
+        <caption>Implicit Tags 
+            <small>defaults if not declared</small></caption>
+        <thead>
+            <tr>
+                <th>tag</th>
+                <th>value</th>
+                <th>description</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for k, v in results["dmarc"]["tags"].items() %}
+              {% if not v["explicit"] %}
+              <tr>
+                  <td>{{ k }}</td>
+                  <td>{{ v["value"] }}</td>
+                  <td>{{ v["description"] }}</td>
+              </tr>
+              {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+  {% endif %}
 </div>
 {% endblock %}

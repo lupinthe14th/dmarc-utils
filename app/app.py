@@ -1,4 +1,5 @@
 import checkdmarc
+import dns.resolver
 from flask import Flask, render_template
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
@@ -21,11 +22,15 @@ def check():
     domains = []
     results = []
     if form.validate_on_submit():
-        nameservers = ['8.8.8.8.', '8.8.4.4']
+        nameservers = dns.resolver.Resolver().nameservers
         domains.append(form.domain.data)
         form.domain.data = None
 
-        results = checkdmarc.check_domains(domains, nameservers=nameservers)
+        results = checkdmarc.check_domains(
+            domains,
+            nameservers=nameservers,
+            include_dmarc_tag_descriptions=True,
+        )
 
     return render_template('check.html',
                            form=form, results=results)
